@@ -1,7 +1,8 @@
-use std::fmt;
-use nalgebra as na;
-
-type Vector3f=na::Vector3<f32>;
+use std::collections::HashMap;
+use std::error::Error;
+use std::{fmt,fs,str};
+use std::path::Path;
+use crate::types::Vector3f;
 
 #[derive(Debug,Clone)]
 pub struct UV{
@@ -67,5 +68,51 @@ impl Clone for Block{
             texture_ids: texture_ids,
             enabled: self.enabled,
         }
+    }
+}
+
+struct Reader{
+    texture_filenames: HashMap<i32,String>,
+    blocks: Vec<Block>,
+}
+
+impl Reader{
+    fn new(path: &Path)->Result<Reader,Box<dyn Error>>{
+        let mut reader=Reader{
+            texture_filenames: HashMap::new(),
+            blocks: Vec::new(),
+        };
+
+        let bin=fs::read(path)?;
+
+        let mut pos=0;
+
+        //Texture filenames
+        //Note that handling of texture filenames does not take non-ASCII characters into account
+        for i in 0..10{
+            let mut texture_filename_buffer=[0u8;31];
+
+            for j in 0..31{
+                texture_filename_buffer[j]=bin[pos];
+                pos+=1;
+            }
+
+            
+            let raw_texture_filename=str::from_utf8(&texture_filename_buffer)?;
+            
+            let mut first_null_pos=30;
+            for j in 0..30{
+                if raw_texture_filename.chars().nth(j).unwrap()=='\0'{
+                    first_null_pos=j;
+                    break;
+                }
+            }
+
+            let mut texture_filename=raw_texture_filename[0..first_null_pos].to_string();
+            texture_filename=texture_filename.replace("\\", "/");
+            reader.texture_filenames.insert(i, texture_filename);
+        }
+
+        Ok(reader)
     }
 }
