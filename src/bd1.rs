@@ -113,6 +113,52 @@ impl Reader{
             reader.texture_filenames.insert(i, texture_filename);
         }
 
+        //Number of blocks
+        let num_blocks=u16::from_be_bytes(bin[pos..pos+2].try_into()?);
+        pos+=2;
+
+        //Blocks
+        for _ in 0..num_blocks{
+            let mut block=Block::new();
+
+            //Vertex positions
+            for i in 0..8{
+                block.vertex_positions[i].x=f32::from_le_bytes(bin[pos..pos+4].try_into()?);
+                pos+=4;
+            }
+            for i in 0..8{
+                block.vertex_positions[i].y=f32::from_le_bytes(bin[pos..pos+4].try_into()?);
+                pos+=4;
+            }
+            for i in 0..8{
+                block.vertex_positions[i].z=f32::from_le_bytes(bin[pos..pos+4].try_into()?);
+                pos+=4;
+            }
+
+            //UVs
+            for i in 0..24{
+                block.uvs[i].u=f32::from_le_bytes(bin[pos..pos+4].try_into()?);
+                pos+=4;
+            }
+            for i in 0..24{
+                block.uvs[i].v=f32::from_le_bytes(bin[pos..pos+4].try_into()?);
+                pos+=4;
+            }
+
+            //Texture IDs
+            for i in 0..6{
+                block.texture_ids[i]=u8::from_le_bytes(bin[pos..pos+1].try_into()?) as i32;
+                pos+=4;
+            }
+
+            //Enabled flag
+            let enabled=u8::from_le_bytes(bin[pos..pos+1].try_into()?);
+            block.enabled=enabled!=0;
+            pos+=4;
+
+            reader.blocks.push(block);
+        }
+
         Ok(reader)
     }
 }
