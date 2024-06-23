@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::{cmp, fmt, fs, io, str};
 use std::path::Path;
 use crate::types::Vector3f;
@@ -84,7 +84,9 @@ impl Reader{
             blocks: Vec::new(),
         };
 
-        let bin=fs::read(path)?;
+        let mut buf_reader=io::BufReader::new(fs::File::open(path)?);
+        let mut bin=vec![];
+        buf_reader.read_to_end(&mut bin)?;
 
         let mut pos=0;
 
