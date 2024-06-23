@@ -3,7 +3,9 @@ use std::error::Error;
 use std::io::{Read, Write};
 use std::{cmp, fmt, fs, io, str};
 use std::path::Path;
-use crate::types::Vector3f;
+use nalgebra as na;
+
+type Vector3f=na::Vector3<f32>;
 
 #[derive(Debug,Clone)]
 pub struct UV{
